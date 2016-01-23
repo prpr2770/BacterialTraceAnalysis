@@ -30,7 +30,13 @@ aggSpectg_fileName = strcat(tracesDirName,'aggSPECTG.mat');
 aggSpectg_mFile = matfile(aggSpectg_fileName,'Writable',true);
 
 % ----------------------------------------------------------------------------------------------
-
+% Preprocessing [intens]: Remove DC componenet by subtracting mean of trace
+A = intens;
+numCols = size(A,2);
+meanA = sum(A,2)/numCols;
+meanA_mat = repmat(meanA,1,numCols);
+intens = A - meanA_mat;
+% ----------------------------------------------------------------------------------------------
 [numTraces, numSamples] = size(intens);
 
 totalFrames = 0;
@@ -45,7 +51,7 @@ for trcID = 1:numTraces
     wind = hamming(nsc);
     
     % compute Spectrogram
-    [SPECTG, F, T] = spectrogram(sig,wind,novlap,nfft,fs);
+    [SPECTG, F, T] = spectrogram(sig,wind,novlap,nfft,fs); %spectrogram(sig,wind,novlap,nfft,fs);
     SPECTG = log10(abs(SPECTG)); % take the log10 of the magnitude of Spectrogram.
     
     % compute the MeanSpec of song.

@@ -54,16 +54,18 @@ DIMS_SPECTG = aggData_mFile.DIMS_SPECTG ;
 % -------------------------------------------------------------------------
 % Extract CodeWords
 
+
+
+
+Files = dir(aggregateDataDirName);
+rndOrder_songs = randperm(length(Files));
+
 totalBatches = ceil(length(Files)/songsPerBatch);
 
 fileCount = 1;
 batchCount = 1;
 trcCount = 0;
 
-
-
-Files = dir(aggregateDataDirName);
-rndOrder_songs = randperm(length(Files));
 
 while (fileCount < length(Files) + 1)
     % ------------------------------------------------------------------------------

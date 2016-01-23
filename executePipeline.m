@@ -5,7 +5,7 @@ pipeline: codeword-histogram + tsne
 itml :> Requires Supervision!
 
 %}
-close all;clear all;
+% close all;clear all;
 
 
 tracesDirName = 'H:\KraljLab\';
@@ -24,7 +24,11 @@ perplexity = 30;
 out_dims = 3;
 initial_dims = 30;
 
-DATA = tsne(CWHIST, [], out_dims, initial_dims, perplexity);
+size(CWHIST)
+size(weak_concomps)
+% DATA = tsne(CWHIST, [], out_dims, initial_dims, perplexity);
+figure;
+DATA = tsne(CWHIST', weak_concomps', out_dims, initial_dims, perplexity);
 PLOT_TITLE = sprintf('tSNE Embedding of CodeWordsHistogram-Spectogram');
 
 % -------------------------------------------------------------------------
@@ -38,8 +42,13 @@ figName = strcat(tracesDirName,'cwHist_tsne_data.fig');
 savefig(figName);
 
 
+% -------------------------------------------------------------------------
+% Determine M - KNN clusters, and then plot their time-waves to see
+% patterns. 
 
-
+% -------------------------------------------------------------------------
+% How to implement the QueryBox in a while loop, to interact with the
+% viewer?
 
 
 
