@@ -173,15 +173,19 @@ avg_group2 = sum(Data(group2,:),1)/length(group2);
 
 figure;
 subplot(2,1,1)
-plot(Data(group1,:))
+plot(Data(group1,:)')
+title('traces of members: Cmp1')
 subplot(2,1,2)
-plot(Data(group2,:))
+plot(Data(group2,:)')
+title('traces of members: Cmp2')
 
 figure;
 subplot(2,1,1)
 plot(avg_group1)
+title('average of traces: Cmp1')
 subplot(2,1,2)
 plot(avg_group2)
+title('average of traces: Cmp2')
 
 % ========================================================================
 diff_orig_frm_avg_grp1 = Data(group1,:) - repmat(avg_group1,length(group1),1);
@@ -192,10 +196,11 @@ noise_grp2 = reshape(diff_orig_frm_avg_grp2,1,[]);
 
 figure;
 subplot(1,2,1)
-histogram(noise_grp1,'Normalization','pdf')
+histogram(noise_grp1,'Normalization','probability')
+title('pdf of noise in signals from avg-signal: Cmp1')
 subplot(1,2,2)
-histogram(noise_grp2,'Normalization','pdf')
-title('pdf of noise in signals belonging to Cmp1 and Cmp2')
+histogram(noise_grp2,'Normalization','probability')
+title('pdf of noise in signals from avg-signal: Cmp2')
 
 % alternative approach to determining histogram and pdf.
 [ftshist1, binpos1] = hist(noise_grp1, 512);
@@ -216,7 +221,7 @@ plot(1:length(avg_group1),avg_group1,'r+')
 hold on
 plot(1:length(avg_group1),bstFit1,'g');
 hold off
-
+title('Determine best-fit curve to approximate avg-trace of Cmp1')
 
 % best line-fit for group1
 pf2 = polyfit(1:length(avg_group2),avg_group2,1)
@@ -226,6 +231,7 @@ plot(1:length(avg_group2),avg_group2,'r+')
 hold on
 plot(1:length(avg_group2),bstFit2,'g');
 hold off
+title('Determine best-fit curve to approximate avg-trace of Cmp2')
 
 % ========================================================================
 % find noise-distribution from best-fit line.
@@ -239,10 +245,11 @@ frmBstFit_noise_grp2 = reshape(diff_orig_frm_bstFt2,1,[]);
 
 figure;
 subplot(1,2,1)
-histogram(frmBstFit_noise_grp1,'Normalization','pdf')
+histogram(frmBstFit_noise_grp1,'Normalization','probability')
+title('pdf of noise in signals from best-fit: Cmp1')
 subplot(1,2,2)
-histogram(frmBstFit_noise_grp2,'Normalization','pdf')
-title('pdf of noise in signals belonging to Cmp1 and Cmp2')
+histogram(frmBstFit_noise_grp2,'Normalization','probability')
+title('pdf of noise in signals from best-fit: Cmp2')
 
 % alternative approach to determining histogram and pdf.
 [ftshist1, binpos1] = hist(noise_grp1, 512);
