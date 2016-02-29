@@ -5,7 +5,8 @@ close all;clear all;
 
 
 tracesDirName = 'H:\KraljLab\';
-tracesFileName = strcat(tracesDirName,'PROPS_data.mat');
+% tracesFileName = strcat(tracesDirName,'PROPS_data.mat');
+tracesFileName = strcat(tracesDirName,'Data_20-Jan-2016.mat');
 load(tracesFileName);
 fs = 5; % samplingFreq 5Hz
 
@@ -161,10 +162,11 @@ end
 figure;
 plot(memberCounts)
 
+[maxMemb, maxClusterID] = max(memberCounts);
 % finding componentID for each node. 
 % memberCounts(1:50) % 11, 18 : major ComponentIDs
 
-group1 = find(weak_concomps == 10);
+group1 = find(weak_concomps ==  maxClusterID);
 group2 = find(weak_concomps == 17);
 
 % ========================================================================

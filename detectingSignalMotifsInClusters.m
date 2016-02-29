@@ -1,5 +1,3 @@
-% Script 2: Determining signal motifs in the clusters.
-
 % Detecting whether there exists synchronization between the cell pulses
 % -------------------------------------------------------------------------
 
@@ -7,12 +5,17 @@ close all;clear all;
 
 
 tracesDirName = 'H:\KraljLab\';
-tracesFileName = strcat(tracesDirName,'PROPS_data.mat');
+tracesFileName = strcat(tracesDirName,'Data_20-Jan-2016.mat');
 load(tracesFileName);
 fs = 5; % samplingFreq 5Hz
 
+ORG_DATA = data;
+% extract the values
+tt=[]; for i = 1:size(ORG_DATA,2) tt = [tt; ORG_DATA(i).TimeTrace]; end
+cntrs=[]; for i = 1:size(ORG_DATA,2) cntrs = [cntrs; ORG_DATA(i).Centroid]; end
+
 % datafile
-A = intens;
+A = tt;
 
 % -----------remove the mean
 numCols = size(A,2);
@@ -25,18 +28,32 @@ A = data;
 normA = sum(A.*A,2).^(0.5);
 normA_mat = repmat(normA,1,numCols);
 Data = A./normA_mat;
-% 
-% % concise way to compute norm
-% norm_Data = diag(sqrt(sum(data.^2')).^(-1))*data ;
-% diff_norm_data = Data - norm_Data; 
-
 % -----------
 
 [numTraces,numSamplePoints] = size(data);
 
-% The below corrMatrices haven't been used to compute the Graph/etc
 CorrelationMatrix = zeros(numTraces,numTraces);
-CorrelationMatrix = Data*Data';
+for row = 1:numTraces
+    for col = row: numTraces
+        x1 = data(row,:);
+        x2 = data(col,:);
+        innerProd = sum(x1.*x2)/(sum(x1.*x1)*sum(x2.*x2))^0.5; 
+        CorrelationMatrix(row,col) = innerProd;
+        CorrelationMatrix(col,row) = innerProd;
+    end
+end
+
+% The below corrMatrices haven't been used to compute the Graph/etc
+fastCorrMat = zeros(numTraces,numTraces);
+fastCorrMat = Data*Data';
+
+diffMat = fastCorrMat - CorrelationMatrix;
+find(diffMat)
+
+
+% concise way to compute norm
+norm_Data = diag(sqrt(sum(data.^2')).^(-1))*data ;
+diff_norm_data = Data - norm_Data; 
 
 
 % ========================================================================
@@ -51,7 +68,7 @@ colorbar
 subplot(2,1,2)
 colormap gray
 % colormap parula
-imagesc(CorrelationMatrix)
+imagesc(fastCorrMat)
 colorbar
 
 fig2 = figure(2)
@@ -63,10 +80,25 @@ imagesc(sortedCorrMatrix)
 colorbar
 subplot(2,1,2)
 colormap gray
-perm = symrcm(CorrelationMatrix);
-sortedCorrMatrix = CorrelationMatrix(perm,perm);
+perm = symrcm(fastCorrMat);
+sortedCorrMatrix = fastCorrMat(perm,perm);
 imagesc(sortedCorrMatrix)
 colorbar
+
+% Plot difference of computing the Correlation Matrix using Matrix
+% Multiplication and Loop based. 
+fig3 = figure(3)
+subplot(2,1,1)
+colormap gray
+% colormap parula
+imagesc(diffMat)
+colorbar
+subplot(2,1,2)
+colormap gray
+% colormap parula
+imagesc(diff_norm_data)
+colorbar
+
 
 % ========================================================================
 % Determine Cluster existence. 
@@ -123,7 +155,7 @@ gplot(A2,pointCoords)
 % ========================================================================
 % Determine Cluster existence and cluster nodes
 
-weak_concomps = conncomp(G2);
+weak_concomps = conncomp(G1);
 totalNumberOfComponents = max(unique(weak_concomps))
 
 memberCounts = zeros(1,totalNumberOfComponents);
@@ -135,27 +167,104 @@ figure;
 plot(memberCounts)
 
 % finding componentID for each node. 
-memberCounts(1:20) % 11, 18 : major ComponentIDs
+% memberCounts(1:50) % 11, 18 : major ComponentIDs
+maxVals = find(memberCounts>20);
 
-group1 = find(weak_concomps == 10);
-group2 = find(weak_concomps == 17);
+group1 = find(weak_concomps == maxVals(1));
+group2 = find(weak_concomps == maxVals(2));
 
 % ========================================================================
-avg_grp1 = sum(data(group1,:),1)/length(group1);
-avg_grp2 = sum(data(group2,:),1)/length(group2);
+avg_group1 = sum(Data(group1,:),1)/length(group1);
+avg_group2 = sum(Data(group2,:),1)/length(group2);
 
 figure;
 subplot(2,1,1)
-plot(avg_grp1)
+plot(Data(group1,:)')
+title('traces of members: Cmp1')
 subplot(2,1,2)
-plot(avg_grp2)
-
+plot(Data(group2,:)')
+title('traces of members: Cmp2')
 
 figure;
 subplot(2,1,1)
-plot(data(group1,:))
+plot(avg_group1)
+title('average of traces: Cmp1')
 subplot(2,1,2)
-plot(data(group2,:))
+plot(avg_group2)
+title('average of traces: Cmp2')
+
 % ========================================================================
+diff_orig_frm_avg_grp1 = Data(group1,:) - repmat(avg_group1,length(group1),1);
+diff_orig_frm_avg_grp2 = Data(group2,:) - repmat(avg_group2,length(group2),1);
 
+noise_grp1 = reshape(diff_orig_frm_avg_grp1,1,[]);
+noise_grp2 = reshape(diff_orig_frm_avg_grp2,1,[]);
 
+figure;
+subplot(1,2,1)
+histogram(noise_grp1,'Normalization','probability')
+title('pdf of noise in signals from avg-signal: Cmp1')
+subplot(1,2,2)
+histogram(noise_grp2,'Normalization','probability')
+title('pdf of noise in signals from avg-signal: Cmp2')
+
+% alternative approach to determining histogram and pdf.
+[ftshist1, binpos1] = hist(noise_grp1, 512);
+[ftshist2, binpos2] = hist(noise_grp2, 512);
+
+% ========================================================================
+% determine a line-fit for the data. 
+% 
+% ft = fittype({'x','1'})
+% data1 = [1:length(avg_group1); avg_group1]';
+% fitobject = fit(data1,ft)
+
+% best line-fit for group1
+pf1 = polyfit(1:length(avg_group1),avg_group1,1)
+bstFit1 = polyval(pf1,1:length(avg_group1));
+figure;
+plot(1:length(avg_group1),avg_group1,'r+')
+hold on
+plot(1:length(avg_group1),bstFit1,'g');
+hold off
+title('Determine best-fit curve to approximate avg-trace of Cmp1')
+
+% best line-fit for group1
+pf2 = polyfit(1:length(avg_group2),avg_group2,1)
+bstFit2 = polyval(pf2,1:length(avg_group2));
+figure;
+plot(1:length(avg_group2),avg_group2,'r+')
+hold on
+plot(1:length(avg_group2),bstFit2,'g');
+hold off
+title('Determine best-fit curve to approximate avg-trace of Cmp2')
+
+% ========================================================================
+% find noise-distribution from best-fit line.
+% Shouldn't this be GAUSSIAN, because that's how the POLYFIT works!!
+
+diff_orig_frm_bstFt1 = Data(group1,:) - repmat(bstFit1,length(group1),1);
+diff_orig_frm_bstFt2 = Data(group2,:) - repmat(bstFit2,length(group2),1);
+
+frmBstFit_noise_grp1 = reshape(diff_orig_frm_bstFt1,1,[]);
+frmBstFit_noise_grp2 = reshape(diff_orig_frm_bstFt2,1,[]);
+
+figure;
+subplot(1,2,1)
+histogram(frmBstFit_noise_grp1,'Normalization','probability')
+title('pdf of noise in signals from best-fit: Cmp1')
+subplot(1,2,2)
+histogram(frmBstFit_noise_grp2,'Normalization','probability')
+title('pdf of noise in signals from best-fit: Cmp2')
+
+% alternative approach to determining histogram and pdf.
+[ftshist1, binpos1] = hist(noise_grp1, 512);
+[ftshist2, binpos2] = hist(noise_grp2, 512);
+
+% ========================================================================
+figure;scatter(cntrs(:,1)',cntrs(:,2)')
+hold on
+scatter(cntrs(group1,1)',cntrs(group1,2)','g+')
+hold on
+scatter(cntrs(group2,1)',cntrs(group2,2)','r+')
+hold off
