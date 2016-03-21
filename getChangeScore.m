@@ -1,4 +1,7 @@
 function [score_fin, pks, locs] = getChangeScore(sig,leftMargin)
+% leftMargin : the index after which you need to measure the MaxValue and
+% time-instant of the max-Event. 
+
 alpha = .0;
 n = 50; % 2*n+k-2 is the size of the "buffer zone".
 k = 10; % window width

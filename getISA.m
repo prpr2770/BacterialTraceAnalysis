@@ -15,7 +15,7 @@
 
 
 % UNIT-TEST - criteria:
-sigs = ca_sigs; % row-data-vectors.
+sigs = ca_sigs_dn; % row-data-vectors.
 
 % Parameters
 W = 32; % num-samples per window ( sigs are sampled at 5Hz )
@@ -26,7 +26,7 @@ Dprime = W;
 
 maxN = 8192; % total number of code-words to be considered.
 
-tracesDirName = 'H:\KraljLab\isa\';
+tracesDirName = 'H:\KraljLab\isa_denoise\';
 
 % windows of i'th cell: win_sigs(t,cellID,windowID);
 [win_sigs, winCounts] = getWindows(sigs, W, delay);
@@ -34,9 +34,9 @@ tracesDirName = 'H:\KraljLab\isa\';
 % extract freq-domain features for the windows of the cells.
 features_win_sigs = getFeatureRepresentation(win_sigs,W);     % bag-of-words. - col-vectors
 
+fn = 'ca_isa_Analysis.mat';
+save(fullfile(tracesDirName, fn),'features_win_sigs','win_sigs','ca_sigs_dn');
 clear win_sigs;
-
-save('isa_Analysis.mat','features_win_sigs','win_sigs','ca_sigs','volt_sigs')
 
 % obtain graph-laplacian - numClusters(K)
 
@@ -62,6 +62,8 @@ imagesc(codeWords_eigVectors)
 colorbar
 title('code-word-eigVectors')
 
+fn = 'isa_graph_Analysis.mat';
+save(fullfile(tracesDirName, fn),'A','B','eigValues','eigVectors','codeWords_eigVectors','Lnorm', 'KernelMatrix', 'SimilarityMatrix','referenceWords');
 
 % ----------------------------------------------------------------
 % =========================================================================
@@ -118,7 +120,6 @@ size(refW_mat)
     
     
     fn = sprintf('ca_trackID_%d.png',testSig);
-    plotFileName = strcat(tracesDirName,fn);
     saveas(fig1, fullfile(tracesDirName, fn), 'png');
     close all
     

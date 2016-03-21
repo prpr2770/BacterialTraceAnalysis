@@ -72,6 +72,17 @@ if loadData == 0
     
 end
 
+% ======================================================================
+% Extract Denoised Signals
+volt_sigs_dn = getDenoisedSignals(volt_sigs);
+ca_sigs_dn = getDenoisedSignals(ca_sigs);
+
+save('volt_ca_data.mat','ca_sigs','volt_sigs','ca_sigs_dn','volt_sigs_dn');
+
+
+% ======================================================================
+% run Wavelet analysis for one trace
+runWaveletStudy
 
     % ==================================================================
     % Extract ISA representation for the signals.
