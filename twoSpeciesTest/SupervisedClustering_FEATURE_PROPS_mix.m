@@ -5,13 +5,31 @@
 %%
 close all; clear all;
 
-dAnz = 'H:\KraljLab\2016-03-17 PROPS in E coli vs salmonella\NoisyResults_18-Mar-2016\SetA\ChangeScores_20-Mar-2016\spectG_21-Mar-2016';
+featureType = 'SPECTOGRAM'; 
+
+dAnz = 'H:\KraljLab\2016-03-17 PROPS in E coli vs salmonella\NoisyResults_18-Mar-2016\SetA\ChangeScores_20-Mar-2016';
 cd(dAnz)
 
 fs = 5; % Sampling frequency. 5Hz
 
+
+%%
+% Determining FEATURE directory
+allFiles = dir();
+for fid = 1:length(allFiles)
+    % ASSUMING ONLY ONE FEATURE FOLDER EXISTS
+    if length(regexp(allFiles(fid).name,featureType));
+        saveDir = allFiles(fid).name;
+    end
+end
+        
+dAnz = [dAnz filesep saveDir]     % Directory containing FEATURE data for SetA of files.
+cd(dAnz)
+
+
+%%
 % create file to store CodeWords-Histograms of each Trace
-cwHist_fileName = [dAnz filesep 'cwHIST_SPECTG.mat'];
+cwHist_fileName = [dAnz filesep 'cwHIST_FEATURE.mat'];
 cwHist_mFile = matfile(cwHist_fileName,'Writable',true);
 
 %% Iterate through the sub-folders
@@ -29,20 +47,20 @@ for dirID = 1:length(dirList)
         % Navigate into folder
         dirLoc = [dAnz filesep dirName];
         cd(dirLoc)
-        flist = dir('NORM_SPECTG_*.mat');
+        flist = dir('NORM_FEATURE_*.mat');
         nfiles = length(flist);
         
         
-        % Compile all NORM_SPECTG
-        ALL_NORM_SPECTG = []; % Col-Vectors
+        % Compile all NORM_FEATURE
+        ALL_NORM_FEATURE = []; % Col-Vectors
         for fid = 1:nfiles
             fdata = load(flist(fid).name);
-            ALL_NORM_SPECTG = [ALL_NORM_SPECTG fdata(1).NORM_SPECTG];
+            ALL_NORM_FEATURE = [ALL_NORM_FEATURE fdata(1).NORM_FEATURE];
         end
         
-        % Archive the NORM_SPECTG
-        FILE_NORM_SPECTG(folderCount).ALL_NORM_SPECTG = ALL_NORM_SPECTG;
-        FILE_NORM_SPECTG(folderCount).FID_NORM_SPECTG = folderCount*ones(1,size(ALL_NORM_SPECTG,2));
+        % Archive the NORM_FEATURE
+        FILE_NORM_FEATURE(folderCount).ALL_NORM_FEATURE = ALL_NORM_FEATURE;
+        FILE_NORM_FEATURE(folderCount).FID_NORM_FEATURE = folderCount*ones(1,size(ALL_NORM_FEATURE,2));
         
     else
         
@@ -53,14 +71,14 @@ for dirID = 1:length(dirList)
 end
 
 
-%% Compile all the NORM_SPECTG into one array.
+%% Compile all the NORM_FEATURE into one array.
 
-GLOBAL_NORM_SPECTG = [];
-GLOBAL_NORM_SPECTG_clusterID = [];
+GLOBAL_NORM_FEATURE = [];
+GLOBAL_NORM_FEATURE_clusterID = [];
 
-for fid = 1:length(FILE_NORM_SPECTG)
-    GLOBAL_NORM_SPECTG = [GLOBAL_NORM_SPECTG FILE_NORM_SPECTG(fid).ALL_NORM_SPECTG];
-    GLOBAL_NORM_SPECTG_clusterID = [GLOBAL_NORM_SPECTG_clusterID FILE_NORM_SPECTG(fid).FID_NORM_SPECTG];
+for fid = 1:length(FILE_NORM_FEATURE)
+    GLOBAL_NORM_FEATURE = [GLOBAL_NORM_FEATURE FILE_NORM_FEATURE(fid).ALL_NORM_FEATURE];
+    GLOBAL_NORM_FEATURE_clusterID = [GLOBAL_NORM_FEATURE_clusterID FILE_NORM_FEATURE(fid).FID_NORM_FEATURE];
 end
 
 %% Use K-Means clustering to detect Code-Words.
@@ -68,7 +86,7 @@ end
 numCodeWords = 256;
 iter = 20;                      % for knn-ma-toolbox.
 
-CODEWORDS = ma_kmeans(GLOBAL_NORM_SPECTG', iter, numCodeWords);
+CODEWORDS = ma_kmeans(GLOBAL_NORM_FEATURE', iter, numCodeWords);
 CODEWORDS = CODEWORDS'; % Convert into Col-vectors.
 
 cwHist_mFile.CODEWORDS = CODEWORDS;
@@ -90,13 +108,13 @@ for dirID = 1:length(dirList)
         % Navigate into folder
         dirLoc = [dAnz filesep dirName];
         cd(dirLoc)
-        flist = dir('NORM_SPECTG_*.mat');
+        flist = dir('NORM_FEATURE_*.mat');
         nfiles = length(flist);
         
         %% iterate over the files
         for fid = 1:nfiles
             fdata = load(flist(fid).name);
-            DATA = fdata(1).NORM_SPECTG;     % col-vectors
+            DATA = fdata(1).NORM_FEATURE;     % col-vectors
             numFrames = size(DATA,2);
             
             nbrs_of_Frames = knnsearch(CODEWORDS',DATA','k',tau,'distance','euclidean');
@@ -135,13 +153,13 @@ initial_dims = 30;
 
 figure;
 tsne_DATA = tsne(GLOBAL_CW_HIST', GLOBAL_CW_HIST_clusterID', out_dims, initial_dims, perplexity);
-PLOT_TITLE = sprintf('tSNE Embedding of CodeWordsHistogram-Spectogram');
+PLOT_TITLE = ['tSNE Embedding of CodeWordsHistogram-' featureType];
 
 % -------------------------------------------------------------------------
 % scatter plot for all the data
 fig = figure()
 colormap jet
-h = scatter3(tsneDATA(:,1),tsneDATA(:,2),tsneDATA(:,3),'filled');
+h = scatter3(tsne_DATA(:,1),tsne_DATA(:,2),tsne_DATA(:,3),'filled');
 title(PLOT_TITLE)
 
 figName = [dAnz filesep 'cwHist_tsne_data.fig'];
@@ -149,29 +167,30 @@ savefig(figName);
 
 
 %% Supervised Clustering: ITML + tSNE-Visualization
-[dist_metric dist_matrix] = runITMLonDataSet(GLOBAL_CW_HIST', GLOBAL_CW_HIST_clusterID');
+[dist_metric, dist_matrix] = runITMLonDataSet(GLOBAL_CW_HIST', GLOBAL_CW_HIST_clusterID');
 
 % implement tSNE on Distance Matrix
 perplexity = 30;
 out_dims = 3;
 
 figure;
-itml_tsne_DATA = tsne(Distance_Matrix, GLOBAL_CW_HIST_clusterID', out_dims, perplexity);
+itml_tsne_DATA = tsne(dist_matrix, GLOBAL_CW_HIST_clusterID', out_dims, perplexity);
 
-
+clusterKeys = unique(GLOBAL_CW_HIST_clusterID);
 % scatter plot for all the data
 fig13 = figure(13)
-% colormap(jet(length(genreKeys)));
-colormap(prism(length(genreKeys)));
+colormap(parula(length(clusterKeys)));
 
-for i = 1:length(genreKeys)
-% for i = 2:length(genreKeys)-1
-    songsOfAGenre = find(songGenres == i);
-    hue = (length(genreKeys)+1-i)*ones(length(songsOfAGenre),1);
-    rad = 30*ones(length(songsOfAGenre),1);
-    h = scatter3(zdata(songsOfAGenre,1),zdata(songsOfAGenre,2),zdata(songsOfAGenre,3),rad,hue,'filled')
+for i = 1:length(clusterKeys)
+% for i = 2:length(clusterKeys)-1
+    cellsOfACluster = find(GLOBAL_CW_HIST_clusterID == i);
+    hue = (length(clusterKeys)+1-i)*ones(length(cellsOfACluster),1);
+    rad = 30*ones(length(cellsOfACluster),1);
+    h = scatter3(itml_tsne_DATA(cellsOfACluster,1),itml_tsne_DATA(cellsOfACluster,2),itml_tsne_DATA(cellsOfACluster,3),rad,hue,'filled')
     hold on
 end
-legend(genreKeys)
+legend(num2str(clusterKeys))
 hold off
 
+figName = [dAnz filesep 'cwHist_itml_tsne_data.fig'];
+savefig(figName);

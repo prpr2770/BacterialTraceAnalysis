@@ -15,8 +15,10 @@ nfiles = length(flist);
 
 fs = 5; % Sampling frequency. 5Hz
 
+featureType = 'MFCC'; % SPECTG
+
 % Directory to save processed data
-saveDir = [dAnz filesep 'spectG_' num2str(date)];
+saveDir = [dAnz filesep featureType '_' num2str(date)];
 if ~exist(saveDir)
     mkdir(saveDir)
 end
@@ -52,8 +54,8 @@ for fID = 1:nfiles
     end
     
     % create file to store AggregateInfo from all Cells in File.
-    aggSpectg_fileName = [fDIR_windows filesep 'aggSPECTG.mat'];
-    aggSpectg_mFile = matfile(aggSpectg_fileName,'Writable',true);
+    aggFeature_fileName = [fDIR_windows filesep 'aggFEATURE.mat'];
+    aggFeature_mFile = matfile(aggFeature_fileName,'Writable',true);
     
     
     % --------------------------------------------------------------------
@@ -74,7 +76,7 @@ for fID = 1:nfiles
     
     % collecting Aggregate Information
     totalFrames = 0;
-    allTraces_MEAN_SPECTG = [];
+    allTraces_MEAN_FEATURE = [];
     
     % iterate over each trace, extract windows.
     for idx = 1:ncells
@@ -82,40 +84,20 @@ for fID = 1:nfiles
         % obtain signal
         sig = data(idx).sig_dn_wav;
         
-        % window details
-        Nx = length(sig);
-        nsc = floor(Nx/4.5);
-        novlap = floor(3*nsc/4);
-        nfft = max(256,2^nextpow2(nsc));
-        wind = hamming(nsc);
-        
-        % ------------------------------------------------------------
-        % Compute Spectorgram
-        % ------------------------------------------------------------
-        
-        % compute Spectrogram
-        [SPECTG, F, T] = spectrogram(sig,wind,novlap,nfft,fs); %spectrogram(sig,wind,novlap,nfft,fs);
-        SPECTG = log10(abs(SPECTG)); % take the log10 of the magnitude of Spectrogram.
-        
-        % compute the MeanSpec of song.
-        numFrames = size(SPECTG,2);
-        meanSPECTG = (1/numFrames)*sum(SPECTG,2);
-        
+        [FEATURE, meanFEATURE] = getFeaturesFromSignal(sig, featureType);
         % ------------------------------------------------------------
         % Archive Data for each trace.
         % ------------------------------------------------------------
         
         % create matfile to store Spectrogram Info
-        trcName = sprintf('SPECTG_%d.mat',idx);
-        spectg_fileName = [fDIR_windows filesep trcName];
-        spectg_mFile = matfile(spectg_fileName,'Writable',true);
+        trcName = sprintf('FEATURE_%d.mat',idx);
+        feature_fileName = [fDIR_windows filesep trcName];
+        feature_mFile = matfile(feature_fileName,'Writable',true);
         
         % save computed values
-        spectg_mFile.SPECTG = SPECTG;
-        spectg_mFile.F = F;
-        spectg_mFile.T = T;
-        spectg_mFile.mean_SPECTG = meanSPECTG;
-        spectg_mFile.numFramesInTrace = numFrames;
+        feature_mFile.FEATURE = FEATURE;
+        feature_mFile.mean_FEATURE = meanFEATURE;
+        feature_mFile.numFramesInTrace = numFrames;
         
         % ------------------------------------------------------------
         % Aggregate Information for each File
@@ -126,9 +108,9 @@ for fID = 1:nfiles
         
         % each trace-mean is stored as a Row-Vector
         if idx ~=1
-            allTraces_MEAN_SPECTG = allTraces_MEAN_SPECTG + meanSPECTG;
+            allTraces_MEAN_FEATURE = allTraces_MEAN_FEATURE + meanFEATURE;
         else
-            allTraces_MEAN_SPECTG = meanSPECTG;
+            allTraces_MEAN_FEATURE = meanFEATURE;
         end
         
         
@@ -141,13 +123,13 @@ for fID = 1:nfiles
     % ------------------------------------------------------------
     
     % compute allTraces_MEAN
-    MEAN_SPECTG = (1/ncells)* allTraces_MEAN_SPECTG;
-    DIMS_SPECTG = length(MEAN_SPECTG);
+    MEAN_FEATURE = (1/ncells)* allTraces_MEAN_FEATURE;
+    DIMS_FEATURE = length(MEAN_FEATURE);
     
     % save aggregateInfo.
-    aggSpectg_mFile.TOTAL_FRAMES = totalFrames;
-    aggSpectg_mFile.MEAN_SPECTG = MEAN_SPECTG;
-    aggSpectg_mFile.DIMS_SPECTG = DIMS_SPECTG;
+    aggFeature_mFile.TOTAL_FRAMES = totalFrames;
+    aggFeature_mFile.MEAN_FEATURE = MEAN_FEATURE;
+    aggFeature_mFile.DIMS_FEATURE = DIMS_FEATURE;
     
     
     % -------------------------------------------------------------
@@ -157,29 +139,29 @@ for fID = 1:nfiles
     for idx = 1:ncells
         
         % create matfile to read Spectrogram Info for each Cell.
-        trcName = sprintf('SPECTG_%d.mat',idx);
-        spectg_fileName = [fDIR_windows filesep trcName];
-        spectg_mFile = matfile(spectg_fileName,'Writable',false);
+        trcName = sprintf('FEATURE_%d.mat',idx);
+        feature_fileName = [fDIR_windows filesep trcName];
+        feature_mFile = matfile(feature_fileName,'Writable',false);
         
-        % extract SPECTG data from the matfile
-        SPECTG = spectg_mFile.SPECTG;
-        numFrames = size(SPECTG,2);
+        % extract FEATURE data from the matfile
+        FEATURE = feature_mFile.FEATURE;
+        numFrames = size(FEATURE,2);
         totalFrames = totalFrames + numFrames;
         
         % compute the variance
-        MEAN_SPECTG_mat = repmat(MEAN_SPECTG,1,numFrames);
-        varSum = varSum + sum((SPECTG - MEAN_SPECTG_mat).^2,2);  %rowsum
+        MEAN_FEATURE_mat = repmat(MEAN_FEATURE,1,numFrames);
+        varSum = varSum + sum((FEATURE - MEAN_FEATURE_mat).^2,2);  %rowsum
         
-        clear MEAN_SPECTG_mat SPECTG numFrames trcName spectg_mFile;
+        clear MEAN_FEATURE_mat FEATURE numFrames trcName feature_mFile;
     end
     
     
-    % Archive the STD_SPECTG information.
-    TOTAL_FRAMES = aggSpectg_mFile.TOTAL_FRAMES;
+    % Archive the STD_FEATURE information.
+    TOTAL_FRAMES = aggFeature_mFile.TOTAL_FRAMES;
     
     if (TOTAL_FRAMES == totalFrames)
-        STD_SPECTG = ((1/totalFrames) * varSum).^(0.5);
-        aggSpectg_mFile.STD_SPECTG = STD_SPECTG;
+        STD_FEATURE = ((1/totalFrames) * varSum).^(0.5);
+        aggFeature_mFile.STD_FEATURE = STD_FEATURE;
     else
         error('Error in TOTAL_FRAME count for all songs!')
     end

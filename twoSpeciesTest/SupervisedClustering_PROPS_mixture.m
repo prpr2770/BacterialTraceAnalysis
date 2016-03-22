@@ -149,7 +149,7 @@ savefig(figName);
 
 
 %% Supervised Clustering: ITML + tSNE-Visualization
-[dist_metric dist_matrix] = runITMLonDataSet(GLOBAL_CW_HIST', GLOBAL_CW_HIST_clusterID');
+[dist_metric, dist_matrix] = runITMLonDataSet(GLOBAL_CW_HIST', GLOBAL_CW_HIST_clusterID');
 
 % implement tSNE on Distance Matrix
 perplexity = 30;
