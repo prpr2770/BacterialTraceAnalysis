@@ -22,7 +22,7 @@ switch featureType
       
     case 'MFCC'
       
-        p = struct('fs',fs,'visu',0,'fft_size',128,'hopsize',64,'num_ceps_coeffs',14,'mel_filt_bank',[0.1 2.5 10],'dB_max',24);
+        p = struct('fs',fs,'visu',0,'fft_size',128,'hopsize',64,'num_ceps_coeffs',14,'mel_filt_bank',[0.1 5 20],'dB_max',24);
 
         % generate mfcc and dct
         [FEATURE, DCT] = ma_mfcc_bio(sig',p);

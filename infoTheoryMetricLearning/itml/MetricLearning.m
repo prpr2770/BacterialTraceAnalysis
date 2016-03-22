@@ -31,5 +31,8 @@ catch
     disp('Unable to learn mahal matrix');
     le = lasterror;
     disp(le.message);
-    A = zeros(d,d);
+%     d = size(X,2);
+%     A = zeros(d,d);
+%     
+    A = A0;
 end    

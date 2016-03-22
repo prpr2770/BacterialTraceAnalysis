@@ -7,7 +7,7 @@
 %%
 close all; clear all;
 
-featureType = 'MFCC';%'SPECTOGRAM'; % MFCC
+featureType = '';'SPECTOGRAM'; % MFCC
 
 dAnz = 'H:\KraljLab\2016-03-17 PROPS in E coli vs salmonella\NoisyResults_18-Mar-2016\SetA\ChangeScores_20-Mar-2016';
 cd(dAnz)

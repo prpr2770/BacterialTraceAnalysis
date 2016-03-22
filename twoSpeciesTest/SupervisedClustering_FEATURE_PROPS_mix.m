@@ -5,7 +5,7 @@
 %%
 close all; clear all;
 
-featureType = 'SPECTOGRAM'; 
+featureType = 'MFCC'; 
 
 dAnz = 'H:\KraljLab\2016-03-17 PROPS in E coli vs salmonella\NoisyResults_18-Mar-2016\SetA\ChangeScores_20-Mar-2016';
 cd(dAnz)
@@ -93,7 +93,7 @@ cwHist_mFile.CODEWORDS = CODEWORDS;
 
 %% Compute CODEWORD_histogram for each trace of each folder
 
-tau = 5;
+tau = 2;
 GLOBAL_CW_HIST = [];
 GLOBAL_CW_HIST_clusterID = [];
 
@@ -149,7 +149,7 @@ cwHist_mFile.GLOBAL_CW_HIST_clusterID = GLOBAL_CW_HIST_clusterID;
 % implement tSNE
 perplexity = 30;
 out_dims = 3;
-initial_dims = 30;
+initial_dims = 10;
 
 figure;
 tsne_DATA = tsne(GLOBAL_CW_HIST', GLOBAL_CW_HIST_clusterID', out_dims, initial_dims, perplexity);
@@ -167,14 +167,18 @@ savefig(figName);
 
 
 %% Supervised Clustering: ITML + tSNE-Visualization
+
+size(GLOBAL_CW_HIST)
+size(GLOBAL_CW_HIST_clusterID)
 [dist_metric, dist_matrix] = runITMLonDataSet(GLOBAL_CW_HIST', GLOBAL_CW_HIST_clusterID');
 
 % implement tSNE on Distance Matrix
 perplexity = 30;
 out_dims = 3;
+initial_dims = 10;
 
 figure;
-itml_tsne_DATA = tsne(dist_matrix, GLOBAL_CW_HIST_clusterID', out_dims, perplexity);
+itml_tsne_DATA = tsne(dist_matrix, GLOBAL_CW_HIST_clusterID',initial_dims, out_dims, perplexity);
 
 clusterKeys = unique(GLOBAL_CW_HIST_clusterID);
 % scatter plot for all the data

@@ -7,7 +7,7 @@ close all; clear all;
 dAnz = 'H:\KraljLab\2016-03-17 PROPS in E coli vs salmonella\NoisyResults_18-Mar-2016\SetA\ChangeScores_20-Mar-2016\SPECTOGRAM_21-Mar-2016\04_122826_PROPS_200ms_900fr_0V_561_Mix_mix_3_Traces';
 cd(dAnz)
 
-featureType = 'SPECTOGRAM';
+featureType = 'MFCC';
 
 flist = dir('NORM_FEATURE_*.mat');
 nfiles = length(flist);
@@ -42,7 +42,7 @@ CODEWORDS = CODEWORDS'; % Convert into Col-vectors.
 cwHist_mFile.CODEWORDS = CODEWORDS;
 %% Compute CODEWORD_histogram for each trace.
 
-tau = 5;
+tau = 2;
 arr_ALL_CW_HIST = [];
 
 for fid = 1:nfiles
