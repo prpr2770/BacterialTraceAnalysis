@@ -40,8 +40,8 @@ for fID = 1:nfiles
     
     fname = flist(fID).name;
     fdata = load(fname);
-    fields = fieldnames(fdata);
     
+    fields = fieldnames(fdata);
     if numel(fields) == 1
         fields{1}
         data = fdata(1).(fields{1});
