@@ -5,7 +5,7 @@
 %%
 close all; clear all;
 
-featureType = 'MFCC'; 
+featureType = 'SPECTROGRAM'; 
 
 dAnz = 'H:\KraljLab\2016-03-17 PROPS in E coli vs salmonella\NoisyResults_18-Mar-2016\SetA\ChangeScores_20-Mar-2016';
 cd(dAnz)
@@ -83,7 +83,7 @@ end
 
 %% Use K-Means clustering to detect Code-Words.
 
-numCodeWords = 256;
+numCodeWords = 12;
 iter = 20;                      % for knn-ma-toolbox.
 
 CODEWORDS = ma_kmeans(GLOBAL_NORM_FEATURE', iter, numCodeWords);

@@ -4,7 +4,14 @@ function [FEATURE, meanFEATURE] = getFeaturesFromSignal(sig, fs, featureType)
 
 
 switch featureType
-    case 'SPECTOGRAM'
+    case 'SPECTROGRAM'
+    FEATURE= spectrogram(sig,fs); %spectrogram(sig,wind,novlap,nfft,fs);
+    FEATURE = log10(abs(FEATURE)); % take the log10 of the magnitude of Spectrogram.
+    % compute the MeanSpec of song.
+        numFrames = size(FEATURE,2);
+        meanFEATURE = (1/numFrames)*sum(FEATURE,2);
+        
+    case 'WIN_SPECTROGRAM'
     %% window details
         Nx = length(sig);
         nsc = floor(Nx/4.5);
@@ -30,7 +37,7 @@ switch featureType
         meanFEATURE = (1/numFrames)*sum(FEATURE,2);
 
       
-      
+    
         
     otherwise
         error('NO VALID FEATURE TYPE SELECTED.')

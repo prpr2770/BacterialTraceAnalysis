@@ -4,7 +4,14 @@ function [FEATURE, meanFEATURE] = getFeaturesFromSignal(sig, fs, featureType)
 
 
 switch featureType
-    case 'SPECTOGRAM'
+    case 'SPECTROGRAM'
+    FEATURE= spectrogram(sig,fs); %spectrogram(sig,wind,novlap,nfft,fs);
+    FEATURE = log10(abs(FEATURE)); % take the log10 of the magnitude of Spectrogram.
+    % compute the MeanSpec of song.
+        numFrames = size(FEATURE,2);
+        meanFEATURE = (1/numFrames)*sum(FEATURE,2);
+        
+    case 'WIN_SPECTROGRAM'
     %% window details
         Nx = length(sig);
         nsc = floor(Nx/4.5);
@@ -22,7 +29,7 @@ switch featureType
       
     case 'MFCC'
       
-        p = struct('fs',fs,'visu',0,'fft_size',128,'hopsize',64,'num_ceps_coeffs',14,'mel_filt_bank',[0.1 5 20],'dB_max',24);
+        p = struct('fs',fs,'visu',0,'fft_size',128,'hopsize',64,'num_ceps_coeffs',14,'mel_filt_bank',[0.1 2.5 10],'dB_max',24);
 
         % generate mfcc and dct
         [FEATURE, DCT] = ma_mfcc_bio(sig',p);
@@ -30,7 +37,7 @@ switch featureType
         meanFEATURE = (1/numFrames)*sum(FEATURE,2);
 
       
-      
+    
         
     otherwise
         error('NO VALID FEATURE TYPE SELECTED.')
