@@ -18,7 +18,8 @@ if loadData == 0
     end
 end
 
-outDIR = 'H:\KraljLab\studyDenoising\chgScores\';
+% outDIR = 'H:\KraljLab\studyDenoising\chgScores\';
+outDir = [inDIR filesep 'chgScores_' num2str(date)];
 % =========================================================================
 % 2. Iterate over each trace and plot the volt-ca-signals
 

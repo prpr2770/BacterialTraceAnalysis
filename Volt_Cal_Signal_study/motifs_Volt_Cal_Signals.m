@@ -25,12 +25,16 @@ if loadData == 0
     end
 end
 
-outDIR = 'H:\KraljLab\studyDenoising\motifs\';
+% outDIR = 'H:\KraljLab\studyDenoising\motifs\';
+outDIR = [inDIR filesep 'motifs_' num2str(date)];
+if ~exist(outDIR)
+    mkdir(outDIR)
+end
 % =========================================================================
 
 % Motif-parameter
-leftMargin = 10;
-rightMargin = 20;
+leftMargin = 20;
+rightMargin = 40;
 
 % SAX
 codeWordLength = 8;

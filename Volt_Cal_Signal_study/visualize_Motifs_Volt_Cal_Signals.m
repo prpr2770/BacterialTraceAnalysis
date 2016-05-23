@@ -5,8 +5,14 @@
 
 % =========================================================================
 close all;
-outDIR = 'H:\KraljLab\studyDenoising\motifs\caDerived\';
+% outDIR = 'H:\KraljLab\studyDenoising\motifs\caDerived\';
+inDIR = 'H:\KraljLab\studyDenoising\';
+outDIR = [inDIR filesep 'motifs_' num2str(date)];
 
+outDIR = [outDIR filesep 'caDerived'];
+if ~exist(outDIR)
+    mkdir(outDIR)
+end
 
 
 volt_signatures = [];
@@ -77,8 +83,11 @@ for idx = 1:length(ca_motifs)
     
     % -----------------------------------------------------------
     % save the image
+    dirName = [outDIR filesep 'voltMotifs'];
+    if ~exist(dirName)
+        mkdir(dirName)
+    end
     plt_nm = sprintf('volt_motifs_trackID_%d.png',idx);
-    dirName = strcat(outDIR,'voltMotifs\');
     saveas(fig1, fullfile(dirName, plt_nm), 'png');
     
     % =========================================================================
@@ -140,8 +149,13 @@ for idx = 1:length(ca_motifs)
     set(h,'Visible','on');
     
     % save the image
+    
+    dirName = [outDIR filesep 'caMotifs'];
+    %     dirName = strcat(outDIR,'caMotifs\');
+    if ~exist(dirName)
+        mkdir(dirName)
+    end
     plt_nm = sprintf('ca_motifs_trackID_%d.png',idx);
-    dirName = strcat(outDIR,'caMotifs\');
     saveas(fig2, fullfile(dirName, plt_nm), 'png');
     
     % =========================================================================
@@ -159,22 +173,22 @@ for idx = 1:length(ca_motifs)
     nbr_ca_motifs_mean = mean(nbr_ca_motifs,1);
     
     try
-    volt_signatures = [volt_signatures; nbr_volt_motifs_mean];
-    ca_signatures = [ca_signatures; nbr_ca_motifs_mean];
+        volt_signatures = [volt_signatures; nbr_volt_motifs_mean];
+        ca_signatures = [ca_signatures; nbr_ca_motifs_mean];
     catch
-       warning('Matrix dimensions do not meet.')
-       sprintf('volt_signatures  #cols: %d',size(volt_signatures,2))
-       sprintf('nbr_volt_motifs_mean  #cols: %d',size(nbr_volt_motifs_mean,2))
-       sprintf('ca_signatures  #cols: %d',size(ca_signatures,2))
-       sprintf('nbr_ca_motifs_mean  #cols: %d',size(nbr_ca_motifs_mean,2))
-       
-       pause;
-       zero_volt_motif = zeros(1,size(volt_signatures,2));
-       zero_ca_motif = zeros(1,size(ca_signatures,2));
-       
-       volt_signatures = [volt_signatures; zero_volt_motif];
-    ca_signatures = [ca_signatures; zero_ca_motif];
-       
+        warning('Matrix dimensions do not meet.')
+        sprintf('volt_signatures  #cols: %d',size(volt_signatures,2))
+        sprintf('nbr_volt_motifs_mean  #cols: %d',size(nbr_volt_motifs_mean,2))
+        sprintf('ca_signatures  #cols: %d',size(ca_signatures,2))
+        sprintf('nbr_ca_motifs_mean  #cols: %d',size(nbr_ca_motifs_mean,2))
+        
+        pause;
+        zero_volt_motif = zeros(1,size(volt_signatures,2));
+        zero_ca_motif = zeros(1,size(ca_signatures,2));
+        
+        volt_signatures = [volt_signatures; zero_volt_motif];
+        ca_signatures = [ca_signatures; zero_ca_motif];
+        
     end
     
     
@@ -202,8 +216,14 @@ for idx = 1:length(ca_motifs)
     set(h,'Visible','on');
     
     % save the image
+    
+    %     dirName = strcat(outDIR,'volt_ca_signatures\');
+    dirName = [outDIR filesep 'volt_ca_signatures'];
+    if ~exist(dirName)
+        mkdir(dirName)
+    end
+    
     plt_nm = sprintf('signature_motifs_trackID_%d.png',idx);
-    dirName = strcat(outDIR,'volt_ca_signatures\');
     saveas(fig3, fullfile(dirName, plt_nm), 'png');
     
     close all;

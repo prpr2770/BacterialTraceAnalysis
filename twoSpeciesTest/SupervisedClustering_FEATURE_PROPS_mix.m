@@ -5,9 +5,9 @@
 %%
 close all; clear all;
 
-featureType = 'SPECTROGRAM'; 
+featureType = 'FFT'; 
 
-dAnz = 'H:\KraljLab\2016-03-17 PROPS in E coli vs salmonella\NoisyResults_18-Mar-2016\SetA\ChangeScores_20-Mar-2016';
+dAnz = 'H:\KraljLab\2016-02-18-PROPS_CALC_Ecoli_vs_Salmonella\ChangeScores';
 cd(dAnz)
 
 fs = 5; % Sampling frequency. 5Hz

@@ -2,7 +2,7 @@
 
 close all; clear all;
 
-inDIR = 'H:\KraljLab\studyDenoising\motifs\voltDerived';
+inDIR = 'H:\KraljLab\studyDenoising\motifs_29-Mar-2016\caDerived';
 
 % find the .mat file
 cd(inDIR)
@@ -12,7 +12,7 @@ nfiles = length(flist);
 
 if nfiles == 1
     % load('H:\KraljLab\studyDenoising\motifs\voltDerived\volt_derived_signatures_motifs_volt_ca.mat');
-    fdata = load(flist(fid).name);
+    fdata = load(flist(1).name);
 else
     error('>1 .mat files in directory')
 end
@@ -29,6 +29,17 @@ end
 
 for idx = 1:2
     
+    if regexp(fields{idx},'ca_sig')
+        sourceType = 'Calcium';
+        srcType = 'Ca';
+        altType = 'V';
+    elseif regexp(fields{idx},'volt_sig')
+        sourceType = 'Volt';
+        srcType = 'V';
+        altType = 'Ca';
+    end
+    
+    
     if idx == 1
         source = fdata(1).(fields{1});
         alt_source = fdata(1).(fields{2});
@@ -43,39 +54,42 @@ for idx = 1:2
     [S W]= GeneralizedGreedySelection(target, source, k)
     source_eigMotifs = source(S,:);
     alt_from_source_eigMotifs = alt_source(S,:);
-
+    
     %%
-fig1 = figure(1)
-numPlots = length(S);
-numRows = min(4, length(S));
-numCols = ceil(numPlots/numRows);
-
-for idx =1:length(S)
-    subplot(numRows,numCols,idx)
-    p1 = plot(source_eigMotifs(idx,:),'r'); hold on;
-    p2 = plot(alt_from_source_eigMotifs(idx,:),'r'); hold off;
-%     if idx == 1
-%     legend([p1 p2],'Ca','V');
-%     end
+    fig1 = figure(1)
+    numPlots = length(S);
+    numRows = min(4, length(S));
+    numCols = ceil(numPlots/numRows);
     
+    for idy =1:length(S)
+        subplot(numRows,numCols,idy)
+        p1 = plot(source_eigMotifs(idy,:),'r'); hold on;
+        p2 = plot(alt_from_source_eigMotifs(idy,:),'g'); hold off;
+        if idy == 1
+            legend([p1 p2],srcType,altType);
+        end
+        
+    end
+    
+    
+    set(gcf,'NextPlot','add');
+    axes;
+    heading = ['Volt/Ca Motifs: from ' sourceType ' sigs'];
+    h = title(heading);
+    set(gca,'Visible','off');
+    set(h,'Visible','on');
+    
+    plt_nm = ['eigMotifs_' fields{idx}];
+    saveas(fig1, fullfile(inDIR, plt_nm), 'png');
+    
+    %%
+    close all
 end
 
 
-set(gcf,'NextPlot','add');
-axes;
-heading = ['Volt/Ca Motifs:' fields{idx}];
-h = title(heading);
-set(gca,'Visible','off');
-set(h,'Visible','on');
+%{
+%% Execute the above code in a more verbose manner.
 
-plt_nm = ['eigMotifs_' fields{idx}];
-saveas(fig1, fullfile(inDIR, plt_nm), 'png');
-
-    
-end
-
-
-%%
 
 source = volt_dervied_ca_signatures;
 target = source;
@@ -117,5 +131,6 @@ h = title(heading);
 set(gca,'Visible','off');
 set(h,'Visible','on');
 
-plt_nm = [fParams '_aggregate'];
-saveas(fig1, fullfile(fDIR, plt_nm), 'png');
+plt_nm = ['ca-eigmotifs'];
+saveas(fig1, fullfile(inDIR, plt_nm), 'png');
+%}

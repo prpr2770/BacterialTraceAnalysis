@@ -11,6 +11,11 @@ switch featureType
         numFrames = size(FEATURE,2);
         meanFEATURE = (1/numFrames)*sum(FEATURE,2);
         
+	case 'FFT'
+	FEATURE = abs(fft(sig))';
+	meanFEATURE = FEATURE;
+	
+		
     case 'WIN_SPECTROGRAM'
     %% window details
         Nx = length(sig);

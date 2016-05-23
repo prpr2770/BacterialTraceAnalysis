@@ -4,10 +4,10 @@
 %%
 close all; clear all;
 
-dAnz = 'H:\KraljLab\2016-03-17 PROPS in E coli vs salmonella\NoisyResults_18-Mar-2016\SetA\ChangeScores_20-Mar-2016\SPECTOGRAM_21-Mar-2016\04_122826_PROPS_200ms_900fr_0V_561_Mix_mix_3_Traces';
+dAnz = 'H:\KraljLab\2016-02-18-PROPS_CALC_Ecoli_vs_Salmonella\ChangeScores\FFT_29-Mar-2016\12_153604_GC_200ms_300x_1200fr_Mix_mix_3_Traces';
 cd(dAnz)
 
-featureType = 'SPECTROGRAM';
+featureType = 'FFT';
 
 flist = dir('NORM_FEATURE_*.mat');
 nfiles = length(flist);

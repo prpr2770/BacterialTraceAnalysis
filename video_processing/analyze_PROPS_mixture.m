@@ -1,12 +1,14 @@
-% Extract traces from the Salmonella and Ecoli dataset.
+% Extract traces from the Salmonella and Ecoli dataset: 3D Denoising
 
 clear
 close all
 
-dAnz = 'H:\KraljLab\2016-03-17 PROPS in E coli vs salmonella';
+dAnz = 'H:\KraljLab\2016-02-18-PROPS_CALC_Ecoli_vs_Salmonella';
 cd(dAnz)
 
-saveDir = [dAnz filesep 'DenoisedResults_' num2str(date)];
+scriptFunction = 'Noise'; %'Denoise'
+
+saveDir = [dAnz filesep scriptFunction '_Results_' num2str(date)];
 if ~exist(saveDir)
     mkdir(saveDir)
 end
@@ -16,8 +18,8 @@ flist = dir('*.tif');
 nfiles = length(flist);
 
 
-xKeep = 91:360;
-yKeep = 91:420;
+xKeep = 91:210;
+yKeep = 91:410;
 
 %%
 condList = {'Ecoli';'Styph';'Mix'};
@@ -32,16 +34,21 @@ end
 
 threshold = 0.001;
 
-for f = 3:nfiles
+for f = 2:nfiles
     flist(f).name
     
     dat = double(bigread2(flist(f).name,1));
-    % denoise the signal.
-    threshold = 0.001;
-    dat = wavelet_denoise3D(dat,threshold);
+    
+    if length(regexp(scriptFunction,'Denoise'))
+        % denoise the signal.
+        threshold = 0.001;
+        dat = wavelet_denoise3D(dat,threshold);
+        
+    end
     
     %%  Look for intensity dependence
     illumImg = zeros(length(xKeep),length(yKeep));
+    size(dat)
     tmp = dat(xKeep,yKeep,1:25);
     illumImg = mean(tmp,3);
     
@@ -56,7 +63,7 @@ for f = 3:nfiles
     
     datT2 = datT./repmat(illumImg3,[1 1 nframes]);
     
-        covImg = covar_image(datT2);
+    covImg = covar_image(datT2);
     avgImg = mean(datT2,3);
     colorimg = zeros(ysize,xsize,3);
     colorimg(:,:,1) = 1.5*mat2gray(avgImg);
@@ -79,9 +86,9 @@ for f = 3:nfiles
         ExImage = [];
     end
     
-%     TracesAll{f} = Traces;
-%     ExImageAll{f} = ExImage;
-%     colorimgAll{f} = colorimg;
+    %     TracesAll{f} = Traces;
+    %     ExImageAll{f} = ExImage;
+    %     colorimgAll{f} = colorimg;
     
     %% -------------------------------------------------
     % Save the dataTraces into respective variables and storing/archiving.
@@ -122,10 +129,10 @@ for f = 3:nfiles
     
     %% Clear variables and empty space
     
-    clearvars -except *All flist nfiles saveDir dAnz f cond saveN threshold *Keep
+    clearvars -except *All flist nfiles saveDir dAnz f cond saveN threshold scriptFunction *Keep
     
     save(saveN)
-    close all; 
+    close all;
 end
 
 
