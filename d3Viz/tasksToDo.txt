@@ -1,0 +1,24 @@
+Tasks to do
+
+1. time-series plot
+2. time-variation of the timelapse Bar
+3. clickable function/selection of circle, to indicate their time-series plots.
+4. enable multiple selections of circles on-click.
+5. plotting multiple time-series: voltage and calcium signals.
+
+
+
+#1. Time-series visualization - lineplot.
+#2. Adding brush dynamics?
+
+
+// Handling BRUSH:
+When you select a group of cells, change their class.
+Then d3.selectAll(className) --> display their linePlots on the savePlotting div.
+
+lineplot_transitioning - via chaining effects! : to indicate that there's an implicit change in scale and values occuring.
+
+
+Brush, select circles, change the class id of these circles.
+
+//Extract set of data from elements?: MultilinePlot?

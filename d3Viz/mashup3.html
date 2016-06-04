@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- ----------------------------------------------------------------------- -->
+
+<div class="tl_div" style="position:absolute;top:0px;left:0; float:left;"></div>
+<div id="lineplot" style="position:absolute;top:0px;left:0; float:left;"></div>
+<div id="multilineplot" style="position:absolute;top:200px;left:0; float:left;">   </div>
+
+<div style="position:absolute;top:400px;left:0; float:left;"> <svg class="petridish"></svg> </div>
+
+<!-- ----------------------------------------------------------------------- -->
+<script src="https://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
+<script src="./plotMultiLine.js"  type='text/javascript'></script>
+<script src="./plotSingleLine.js"  type='text/javascript'></script>
+<script src="./plotTimeLapseBar.js"  type='text/javascript'></script>
+
+<script type='text/javascript'>
+
+// CellData from measurements
+
+var cellData = [
+{cellID: 1, voltSig : [1, 2, 3, 4, 5,1, 2, 3, 4, 5], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 1, yPos: 1 },
+{cellID: 2, voltSig : [1, 2, 3, 4, 5,5, 4, 3, 2, 1], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 2, yPos: 2 },
+{cellID: 3, voltSig : [1, 2, 3, 4, 5,6, 7, 8, 7, 6], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 3, yPos: 3 },
+{cellID: 4, voltSig : [1, 2, 3, 4, 5,5, 6, 7, 8, 9], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 4, yPos: 4 },
+{cellID: 5, voltSig : [1, 2, 3, 4, 5,4, 3, 2, 1, 0], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 5, yPos: 5 }];
+
+
+var linkData = [{src:1, dest:2, value:0.8},{src:3, dest:4, value:0.2},{src:1, dest:5, value:0.1}];
+//=============================================================================
+// Call the functions to plot!
+
+// ----------------------------------------------------------------------------
+// multilineplot parameters
+var mlp_margin = {top: 20, right: 20, bottom: 30, left: 50},
+mlp_width = 500 - mlp_margin.left - mlp_margin.right,
+mlp_height = 200 - mlp_margin.top - mlp_margin.bottom;
+
+// multilineplot
+var mlp_divID = "#multilineplot";
+plotMultiLine(cellData, mlp_divID, mlp_margin, mlp_width, mlp_height)
+
+// ----------------------------------------------------------------------------
+// singlelineplot parameters
+var slp_margin = {top: 20, right: 20, bottom: 30, left: 50},
+slp_width = 500 - slp_margin.left - slp_margin.right,
+slp_height = 200 - slp_margin.top - slp_margin.bottom;
+
+// singlelineplot
+var slp_divID = "#lineplot";
+var linePlot_data = cellData[0].voltSig;
+var slp_graph_props = plotSingleLine(linePlot_data, slp_divID, slp_margin, slp_width, slp_height);
+
+var slp_xScale = slp_graph_props[0];
+var slp_yScale = slp_graph_props[1];
+var slp_xAxis = slp_graph_props[2];
+var slp_yAxis = slp_graph_props[3];
+var slp_linePlot = slp_graph_props[4];
+
+//[xScale, yScale, xAxis, yAxisLeft, linePlot] = plotSingleLine(linePlot_data, slp_divID, slp_margin, slp_width, slp_height);
+
+// ----------------------------------------------------------------------------
+// Time-Lapse Bar: Indicator
+
+var tl_divID = ".tl_div";
+var tl_scale = plotTimeLapseBar(tl_divID, slp_margin, slp_width, slp_height );
+
+// =====================================================================================================
+// ---------------------------------------------------------------------------
+      // Petridish layout
+      var margin = {top: 20, right: 20, bottom: 20, left: 20};
+
+      var width = 600, height = 300;
+
+      var  petriWidth = width - margin.left - margin.right;
+      var petriHeight = height - margin.top - margin.bottom;
+
+      var pd_div_Class = ".petridish";
+
+// plotPetriDish(cellData,pd_divID,pd_margin, pd_width, pd_height);
+// function plotPetriDish(cellData,pd_div_Class,pd_margin, pd_width, pd_height){}
+
+var petridish = d3.select(pd_div_Class).attr("width", width ).attr("height", height );
+/*
+// =====================================================================================================
+// =====================================================================================================
+// Defining Brush:
+var nodes = d3.selectAll(".cell");
+var brush = petridish.append("g")
+    .attr("class", "brush")
+      .call(
+        d3.svg.brush()
+        .x(d3.scale.identity().domain([0, width]))
+        .y(d3.scale.identity().domain([0, height]))
+        .on("brush", function() {
+          var extent = d3.event.target.extent();
+
+          // change NODE to the CIRCLE_CELL identifier.
+          nodes.classed("selected", function(d) {  // change the d.x to d.CX or something, according to CELL info.
+            return extent[0][0] <= pd_xScale(d.xPos) && pd_xScale(d.xPos) < extent[1][0] && extent[0][1] <= pd_yScale(d.yPos) && pd_yScale(d.yPos) < extent[1][1];
+            //return extent[0][0] <= this.cx && this.cx < extent[1][0] && extent[0][1] <= this.cy && this.cy < extent[1][1];
+            });//classed
+
+          })// on
+        );//call
+// =====================================================================================================
+// =====================================================================================================
+*/
+
+///*
+// =====================================================================================================
+// =====================================================================================================
+// Defining and Using Brush
+var brush = d3.svg.brush()
+	.x(d3.scale.identity().domain([0, width]))
+	.y(d3.scale.identity().domain([0, height]))
+	//.on("brushstart", brushstart)
+	.on("brush", brushmove)
+	.on("brushend", brushend);
+
+var brushCell;
+
+/*
+	// Clear the previously-active brush, if any.
+	function brushstart() {
+		if (brushCell !== this) {
+			d3.select(brushCell).call(brush.clear());
+			brushCell = this;
+		}
+	}
+*/
+	// Highlight the selected circles.
+	function brushmove() {
+		var e = brush.extent();
+		petridish.selectAll(".cell").classed("selected", function(d) {
+			return !( e[0][0] > pd_xScale(d.xPos) || pd_xScale(d.xPos) > e[1][0] || e[0][1] > pd_yScale(d.yPos) || pd_yScale(d.yPos) > e[1][1]);
+		});
+
+}
+
+	// If the brush is empty, select all circles.
+	function brushend() {
+		if (brush.empty()) petridish.selectAll(".selected").classed("selected", false);
+
+    // -------------------------------------------------------------------
+    // update display on multiline
+    var selected_nodes_data = d3.selectAll(".selected").data();
+    if (selected_nodes_data.length != 0){
+      //console.log(selected_nodes_data);
+      var mlp = d3.selectAll(".multiline").remove();
+      plotMultiLine(selected_nodes_data, mlp_divID, mlp_margin, mlp_width, mlp_height);
+      }
+	}
+
+
+//  var brush_elem = petridish.append("g").attr("class", "brush").call(brush);
+  petridish.classed("brush",true).call(brush);
+// =====================================================================================================
+// =====================================================================================================
+//*/
+
+// ---------------------------------------------------------------------------
+// Spatial distribution of cells
+
+      var pd_xScale = d3.scale.linear().range([margin.left, petriWidth]);
+      var pd_yScale = d3.scale.linear().range([petriHeight, margin.top]);
+
+      // set domain by considering dataset.
+      pd_xScale.domain([d3.min(cellData, function(d){return d.xPos}), d3.max(cellData, function(d){return d.xPos})]);
+      pd_yScale.domain([d3.min(cellData, function(d){return d.yPos}), d3.max(cellData, function(d){return d.yPos})]);
+
+      // associate msrmt_data to visual_elements
+      var cell = petridish.selectAll("circle").data(cellData);
+
+/*
+      cell //.update()
+      		.attr("cx", function(d) { return pd_xScale(d.xPos); })
+      		.attr("cy", function(d) { return pd_yScale(d.yPos); })
+      		.attr("fill",function(d){return "url(#gradient_"+d.cellID+")"; })
+          .on("click", function(d){
+                        alert("Hello! Remove Plots!: update()");
+                        d3.selectAll(".view_plot").remove();
+
+                        // referencing new data to be plotted
+                        var line_plot = d3.select(".aLinePlot");
+
+                        // critical line!! -- where the scaleUpdate occurs.
+                        line_plot.data(function(){
+                          slp_xScale.domain([0,d.voltSig.length]);
+                          slp_yScale.domain([d3.min(d.voltSig), d3.max(d.voltSig)]);
+                          // update Axis functions
+                          slp_xAxis.scale(slp_xScale);
+                          slp_yAxis.scale(slp_yScale);
+
+                          // update linePlot function
+                          slp_linePlot.x(function(datum,indx) {  return slp_xScale(indx); }).y(function(datum) { return slp_yScale(datum);})
+
+                          return [d.voltSig];
+                        });
+
+                        // call the Axes functions
+                        d3.select(".x axis").call(slp_xAxis);
+                        d3.select(".y axis").call(slp_yAxis);
+
+                        // call the linePlot function
+                        line_plot.append("svg:path")
+                          .attr("class","view_plot")
+                          .attr("d", function(d){return slp_linePlot(d);});
+                        });
+*/
+
+      cell.enter()
+      	.append("circle") // define attributes of the visual elements being added.
+        .attr("class","cell")
+        .attr("id",function(d) { return "cell_"+d.cellID; })
+      		.attr("cx", function(d) { return pd_xScale(d.xPos); })
+      		.attr("cy", function(d) { return pd_yScale(d.yPos);})
+          .attr("pointer-events", "all")
+          .on("click", function(d){
+                          alert("Hello! Removed Plots!: enter()");
+                          d3.selectAll(".view_plot").remove();
+
+                        // referencing new data to be plotted
+                          var line_plot = d3.select(".aLinePlot");
+
+                          // critical line!! -- where the scaleUpdate occurs.
+                          line_plot.data(function(){
+                              // update scale
+                              slp_xScale.domain([0,d.voltSig.length]);
+                              slp_yScale.domain([d3.min(d.voltSig), d3.max(d.voltSig)]);
+                              // update axis
+                              slp_xAxis.scale(slp_xScale);
+                              slp_yAxis.scale(slp_yScale);
+                              // update linePlot
+                              slp_linePlot.x(function(datum,indx) {  return slp_xScale(indx); }).y(function(datum) { return slp_yScale(datum);})
+
+                              return [d.voltSig];
+                              });
+
+                              // call the Axes functions
+                              d3.select(".x axis").call(slp_xAxis);
+                              d3.select(".y axis").call(slp_yAxis);
+
+                              // call linePlot function
+                              line_plot.append("svg:path")
+                                .attr("class","view_plot")
+                                .attr("d", function(d){return slp_linePlot(d);});
+                          })
+      		.attr('fill', 'red')
+      		//.style("fill","steelblue")
+      		.attr("r", 20)
+      		.transition() // let the circles expand in
+      			.attr("r",10)
+      			.attr("fill",function(d){return "url(#gradient_"+d.cellID+")"; });
+
+      cell.exit()
+      	.transition() // let circles shrink-out
+      		.attr('r',0)
+      		.remove();
+
+          // --------------------------------------------------------------------
+          // cell-edges
+
+
+var edge = petridish.selectAll("path").data(linkData);
+/*
+// -----------------------------------------------------------------------------
+// representing edges as LINES!
+          edge.enter()
+          .append("line")
+             .attr("class", "cell_link")
+             .attr("x1", function(d) {
+               var cellID = d.src;
+               var xpos = d3.select("#cell_"+cellID).attr("cx");
+               var ypos = d3.select("#cell_"+cellID).attr("cy");
+
+               // update y1 for line
+               d3.select(this).attr("y1", ypos);
+               return xpos;
+             })
+             .attr("x2", function(d) {
+               var cellID = d.dest;
+               //obtain position values from attributes of circle, and not the data!
+               var xpos = d3.select("#cell_"+cellID).attr("cx");
+               var ypos = d3.select("#cell_"+cellID).attr("cy");
+
+               // update y1 for line
+               d3.select(this).attr("y2", ypos);
+               return xpos;
+             })
+             .attr("stroke-width",function(d){return d.value; });
+*/
+
+///*
+// -----------------------------------------------------------------------------
+// representing edges as CURVED-LINES!
+          edge.enter()
+          .append("path")
+             .attr("class", "cell_link")
+             .attr("d",function(d){
+               var src = d.src;
+               var src_x =d3.select("#cell_"+src).attr("cx");
+               var src_y =d3.select("#cell_"+src).attr("cy");
+               console.log(src_x, src_y)
+              var dest = d.dest;
+               var dest_x =d3.select("#cell_"+dest).attr("cx");
+               var dest_y =d3.select("#cell_"+dest).attr("cy");
+              console.log(dest_x, dest_y)
+               var ctrl_x = Math.abs(src_x - dest_x) /2 ;
+               var ctrl_y = Math.abs(src_y - dest_y) /2 ;
+               console.log(ctrl_x, ctrl_y)
+               return "M" + src_x + "," + src_y
+                         + "S" + ctrl_x + "," + ctrl_y
+                         + " " + dest_x + "," + dest_y;
+
+
+             })
+             .attr("stroke-width",function(d){return d.value; });
+// ---------------------------------------------------------------------------
+//*/
+
+
+//==============================================================================
+//==============================================================================
+//d3.selectAll(".cell").attr("pointer-events", "all");
+      // ---------------------------------------------------------------------------
+      // Visual Effects: time-series based color-variation of the Cells/Circles in Petridish
+
+      // Methodology: Define <svg_defs:radial_gradiaent> for each cell and modify its properties as per the data.
+      // Similar to associating each cell to the data, we associate each <svg:defs> to the data.
+      // Thus, indirectly, we associate each <svg:defs> to each cell.
+
+      var cell_grad = petridish.selectAll("defs").data(cellData);
+      cell_grad.enter()
+      	.append("defs") // cellData[i]: is associated with each <defs>
+      		.append("radialGradient")
+      			.attr("id",function(d){return "gradient_"+d.cellID;}) // accesses data attached to parent <svg:defs>
+      			.attr("cx", "0.5").attr("cy", "0.5").attr("fx", "0.5").attr("fy", "0.5")
+      			.attr("r","0.5")
+
+
+      var radial_gradients = d3.selectAll("radialGradient");
+      radial_gradients.append("stop").attr("offset", "0%").style("stop-color", "red");
+      radial_gradients.append("stop").attr("offset", "100%").style("stop-color", "white");
+
+
+
+
+// =====================================================================================================
+// Incorporating variation in graphics over time!
+
+var time_index = 0; // keep track of time-index
+window.setInterval(
+  	function() { // Repeatedly call this function over given time-interval.
+
+  		// ---------------------------------------------------------------------------
+  		// Visual Effects: time-series based color-variation of cells.
+
+      d3.select(".tl_circle").transition().duration(1000).attr("cx",tl_scale(time_index));
+
+      // ----------------------------------------------------------------------
+
+  		var rad_gradients = d3.selectAll("radialGradient");
+  		rad_gradients.transition().duration(1000) // change the radius of the radial_gradient at each time-step
+  			.attr("r",
+  				function(d){
+  					var pd_rScale = d3.scale.linear().domain([d3.min(d.voltSig), d3.max(d.voltSig)]);
+  					pd_rScale.range([0, 1]);
+  					return pd_rScale(d.voltSig[time_index]); }
+  			);
+  			// update time-step : such that it runs as an infinte loop
+      	time_index = (time_index+1) % (cellData[1].voltSig.length);
+
+  		}
+  		,1000);
+
+</script>
+<!-- ----------------------------------------------------------------------- -->
+<style>
+  /* tell the SVG path to be a thin blue line without any area fill */
+  path {
+    stroke: steelblue;
+    stroke-width: 1;
+    fill: none;
+  }
+
+  .axis {
+    shape-rendering: crispEdges;
+  }
+
+  .x.axis line {
+    stroke: lightgrey;
+  }
+
+  .x.axis .minor {
+    stroke-opacity: .5;
+  }
+
+  .x.axis path {
+    display: none;
+  }
+
+  .y.axis line, .y.axis path {
+    fill: none;
+    stroke: #000;
+  }
+
+  .selected {
+    fill: blue;
+  }
+
+  .brush .extent {
+  fill-opacity: .1;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+
+.cell_link{
+stroke: grey;
+stroke-opacity:0.6;
+}
+</style>

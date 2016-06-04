@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<script src="http://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
+
+
+<div class="chart"></div>
+
+<div >Static Specification of Chart in SVG </div>
+
+
+
+<script>
+var data = [4, 8, 15, 16, 23, 42];
+
+// defining a linear scaling function
+var x = d3.scale.linear()
+	.domain([0, d3.max(data)])
+	.range([0, 360]);
+
+// creating the chart.
+d3.select(".chart")
+	.selectAll("div")
+		.data(data)
+	.enter().append("div")
+      .attr("class","divYa")
+      .classed("hidden", function(d){return d<10? true : false; }) // adds a new class to the element.
+			.style("width",function(d){return x(d) +"px";})
+			.style("background-color","steelblue") //"color","white","padding","3px","text-align","3px")
+			.style("color","white")
+			.style("padding","3px")
+			.style("text-align","right")
+			.style("margin","1px")
+			.text(function(d){return d;})
+</script>
+
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+<style>
+
+.chart div {
+  font: 10px sans-serif;
+  background-color: steelblue;
+  text-align: right;
+  padding: 3px;
+  margin: 1px;
+  color: white;
+}
+
+</style>
+
+<!--
+<div class="chart1">
+  <div style="width: 40px;">4</div>
+  <div style="width: 80px;">8</div>
+  <div style="width: 150px;">15</div>
+  <div style="width: 160px;">16</div>
+  <div style="width: 230px;">23</div>
+  <div style="width: 420px;">42</div>
+
+  </div>
+-->
+
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+<!--
+<style>
+.svgChart rect{
+	fill: steelblue;
+
+	}
+
+.svgChart text{
+	fill: white;
+	font: 10px sans-serif;
+	text-anchor: end;
+	}
+
+</style>
+
+
+<svg class="svgChart1" width="420" height="120">
+<g transform="translate(0,0)">
+    <rect width="40" height="19"></rect>
+    <text x="37" y="9.5" dy=".35em">4</text>
+  </g>
+  <g transform="translate(0,20)">
+    <rect width="80" height="19"></rect>
+    <text x="77" y="9.5" dy=".35em">8</text>
+  </g>
+  <g transform="translate(0,40)">
+    <rect width="150" height="19"></rect>
+    <text x="147" y="9.5" dy=".35em">15</text>
+  </g>
+  <g transform="translate(0,60)">
+    <rect width="160" height="19"></rect>
+    <text x="157" y="9.5" dy=".35em">16</text>
+  </g>
+  <g transform="translate(0,80)">
+    <rect width="230" height="19"></rect>
+    <text x="227" y="9.5" dy=".35em">23</text>
+  </g>
+  <g transform="translate(0,100)">
+    <rect width="420" height="19"></rect>
+    <text x="417" y="9.5" dy=".35em">42</text>
+  </g>
+  </svg>
+
+-->
+ <svg class="svgChart">  </svg>

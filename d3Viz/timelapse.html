@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<div class="tl_div"></div>
+
+
+
+<script src="https://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
+
+<script type='text/javascript'>
+
+// =====================================================================================================
+// Time-Lapse Bar: Indicator
+
+var time_lapse_width = 400;
+var time_lapse_height = 30;
+
+
+var tl_xscale = d3.scale.linear().range([0,time_lapse_width]);
+
+var tl_div = d3.select(".tl_div");
+var tl_svg = tl_div.append("svg:svg")
+  .attr("class","timelapse")
+  .attr("width",time_lapse_width)
+  .attr("height",time_lapse_height);
+
+  tl_svg.append("svg:line")
+    .attr("x1",0)
+    .attr("x2",time_lapse_width)
+    .attr("y1", time_lapse_height/2)
+    .attr("y2", time_lapse_height/2)
+    .attr("stroke","#000")
+    .attr("stroke-width",2);
+
+    var timelapse_svg = tl_svg;
+
+
+var bbox_timelapse_svg = timelapse_svg.node().getBBox();  // gives (x,y) coords, but not (height,width)
+var bbox_width = +timelapse_svg.node().getAttribute("width");
+var bbox_height = +timelapse_svg.node().getAttribute("height");
+var tl_radius = 5;
+timelapse_svg.append("circle")
+	.attr("cx", bbox_timelapse_svg.x + bbox_width/2) // x_coord determined by time_index
+	.attr("cy",bbox_timelapse_svg.y + bbox_height/2 ) // y_coord determined by the height of the svg_element.
+	.attr("fill", "black")
+	.attr("r", tl_radius)
+
+  /*
+  var timelapse_svg = d3.select(".timelapse");
+
+  timelapse_svg
+    .attr("width", time_lapse_width )
+    .attr("height", time_lapse_height )
+    .style("position", "absolute")
+    .style("top","10px")
+    .style("left","10px");
+
+  timelapse_svg.append("line")
+  */
+
+
+  /*
+
+  var lineData = [{"x":bbox_timelapse_svg.x,"y":bbox_timelapse_svg.y},{"x":bbox_timelapse_svg.x + bbox_timelapse_svg.width,"y":bbox_timelapse_svg.y}];
+
+  // accessor function
+  lineFunction = d3.svg.line()
+  							.x(function(d) { return d.x; })
+  							.y(function(d) { return d.y; })
+  							.interpolate("linear");
+
+  timelapse_svg.append("path")
+  	.attr("d",lineFunction(lineData))
+  	.attr("stroke","blue")
+  	.attr("stroke-width",2)
+  	.attr("fill","none")
+
+  */
+
+  /*
+  timelapse_svg.append("line") // horizontal linear;
+  	.attr("x1",bbox_timelapse_svg.x)
+  	.attr("x2",bbox_timelapse_svg.x + bbox_timelapse_svg.width)
+  	.attr("y1",bbox_timelapse_svg.y)
+  	.attr("y2",bbox_timelapse_svg.y)
+  	.style("stroke","blue")
+  	.style("stroke-width",2)
+  	*/
+
+
+  	///*
+
+// =============================================================================
+
+
+
+</script>

@@ -1,0 +1,343 @@
+<!-- Putting it all together -->
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<div style="position:absolute;top:500px;left:0; float:bottom;"> <svg class="petridish"></svg> </div>
+<div class="tl_div" style="position:absolute;top:0px;left:0; float:left;"></div>
+<div id="lineplot" style="position:absolute;top:0px;left:0; float:left;"></div>
+
+
+<script src="https://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
+
+<script type='text/javascript'>
+
+// CellData from measurements
+
+var cellData = [
+{cellID: 1, voltSig : [1, 2, 3, 4, 5,1, 2, 3, 4, 5], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 1, yPos: 1 },
+{cellID: 2, voltSig : [1, 2, 3, 4, 5,5, 4, 3, 2, 1], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 2, yPos: 2 },
+{cellID: 3, voltSig : [1, 2, 3, 4, 5,6, 7, 8, 7, 6], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 3, yPos: 3 },
+{cellID: 4, voltSig : [1, 2, 3, 4, 5,5, 6, 7, 8, 9], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 4, yPos: 4 },
+{cellID: 5, voltSig : [1, 2, 3, 4, 5,4, 3, 2, 1, 0], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 5, yPos: 5 }];
+
+
+var linePlot_data = cellData[0].voltSig;
+
+
+
+// =====================================================================================================
+//=============================================================================
+
+
+// define dimensions of graph
+var m = [80, 80, 80, 80]; // margins
+var time_lapse_width = 1000 - m[1] - m[3]; // width
+var time_lapse_height = 400 - m[0] - m[2]; // height
+
+
+//var data = [3, 6, 2, 7, 5, 2, 0, 3, 8, 9, 2, 5, 9, 3, 6, 3, 6, 2, 7, 5, 2, 1, 3, 8, 9, 2, 5, 9, 2, 7];
+
+
+var xScale = d3.scale.linear().range([0, time_lapse_width]);
+var yScale = d3.scale.linear().range([time_lapse_height, 0]);
+
+
+  // Add an SVG element with the desired dimensions and margin.
+  var graph_width = time_lapse_width + m[1] + m[3];
+  var graph_height = time_lapse_height + m[0] + m[2];
+  var graph = d3.select("#lineplot").append("svg:svg")
+        .attr("class","aGraph")
+        .attr("width", graph_width)
+        .attr("height", graph_height)
+        .append("svg:g") // what does this do?
+        .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
+        .attr("class","aLinePlot");
+
+graph.data(function(){
+  xScale.domain([0, linePlot_data.length]);
+  yScale.domain([d3.min(linePlot_data), d3.max(linePlot_data)]);
+  return [linePlot_data];
+});
+
+
+// create a line function that can convert data[] into x and y points
+var linePlot = d3.svg.line()
+  .x(function(datum,indx) {  return xScale(indx); })
+  .y(function(datum) { return yScale(datum);})
+
+  // create yAxis
+  var xAxis = d3.svg.axis().scale(xScale).tickSize(-time_lapse_height).tickSubdivide(true);
+  // Add the x-axis.
+  graph.append("svg:g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + time_lapse_height+ ")")
+        .call(xAxis);
+
+
+  // create left yAxis
+  var yAxisLeft = d3.svg.axis().scale(yScale).ticks(4).orient("left");
+  // Add the y-axis to the left
+  graph.append("svg:g")
+        .attr("class", "y axis")
+        .attr("transform", "translate(-10,0)")
+        .call(yAxisLeft);
+
+    // Add the line by appending an svg:path element with the data line we created above
+  // do this AFTER the axes above so that the line is above the tick-lines
+
+      graph.append("svg:path")
+        .attr("class","view_plot")
+        .attr("d", function(d){return linePlot(d);});
+
+// =====================================================================================================
+// ---------------------------------------------------------------------------
+      // Petridish layout
+      var margin = {top: 20, right: 20, bottom: 20, left: 20};
+
+      var width = 600, height = 300;
+
+      var  petriWidth = width - margin.left - margin.right;
+      var petriHeight = height - margin.top - margin.bottom;
+
+      var petridish = d3.select(".petridish")
+          .attr("width", width )
+          .attr("height", height );
+
+      // ---------------------------------------------------------------------------
+      // Spatial distribution of cells
+
+      var pd_xScale = d3.scale.linear().range([margin.left, petriWidth]);
+      var pd_yScale = d3.scale.linear().range([petriHeight, margin.top]);
+
+      // set domain by considering dataset.
+      pd_xScale.domain([d3.min(cellData, function(d){return d.xPos}), d3.max(cellData, function(d){return d.xPos})]);
+      pd_yScale.domain([d3.min(cellData, function(d){return d.yPos}), d3.max(cellData, function(d){return d.yPos})]);
+
+      // associate msrmt_data to visual_elements
+      var cell = petridish.selectAll("circle").data(cellData);
+
+      cell //.update()
+      		.attr("cx", function(d) { return pd_xScale(d.xPos); })
+      		.attr("cy", function(d) { return pd_yScale(d.yPos); })
+      		.attr("fill",function(d){return "url(#gradient_"+d.cellID+")"; })
+          .on("click", function(d){
+                        //alert("Hello! Remove Plots!: update()");
+                        d3.selectAll(".view_plot").remove();
+
+                        // referencing new data to be plotted
+                        var line_plot = d3.select(".aLinePlot");
+
+                        // critical line!! -- where the scaleUpdate occurs.
+                        line_plot.data(function(){
+                          xScale.domain([0,d.voltSig.length]);
+                          yScale.domain([d3.min(d.voltSig), d3.max(d.voltSig)]);
+                          // update Axis functions
+                          xAxis.scale(xScale);
+                          yAxisLeft.scale(yScale);
+
+                          // update linePlot function
+                          linePlot.x(function(datum,indx) {  return xScale(indx); }).y(function(datum) { return yScale(datum);})
+
+                          return [d.voltSig];
+                        });
+
+                        // call the Axes functions
+                        d3.select(".x axis").call(xAxis);
+                        d3.select(".y axis").call(yAxisLeft);
+
+                        // call the linePlot function
+                        line_plot.append("svg:path")
+                          .attr("class","view_plot")
+                          .attr("d", function(d){return linePlot(d);});
+                        });
+
+      cell.enter()
+      	.append("circle") // define attributes of the visual elements being added.
+      		.attr("cx", function(d) { return pd_xScale(d.xPos); })
+      		.attr("cy", function(d) { return pd_yScale(d.yPos);})
+          .on("click", function(d){
+                          //alert("Hello! Removed Plots!: enter()");
+                          d3.selectAll(".view_plot").remove();
+
+                        // referencing new data to be plotted
+                          var line_plot = d3.select(".aLinePlot");
+
+                          // critical line!! -- where the scaleUpdate occurs.
+                          line_plot.data(function(){
+                              // update scale
+                              xScale.domain([0,d.voltSig.length]);
+                              yScale.domain([d3.min(d.voltSig), d3.max(d.voltSig)]);
+                              // update axis
+                              xAxis.scale(xScale);
+                              yAxisLeft.scale(yScale);
+                              // update linePlot
+                              linePlot.x(function(datum,indx) {  return xScale(indx); }).y(function(datum) { return yScale(datum);})
+
+                              return [d.voltSig];
+                              });
+
+                              // call the Axes functions
+                              d3.select(".x axis").call(xAxis);
+                              d3.select(".y axis").call(yAxisLeft);
+
+                              // call linePlot function
+                              line_plot.append("svg:path")
+                                .attr("class","view_plot")
+                                .attr("d", function(d){return linePlot(d);});
+                          })
+      		.attr('fill', 'red')
+      		//.style("fill","steelblue")
+      		.attr("r", 20)
+      		.transition() // let the circles expand in
+      			.attr("r",10)
+      			.attr("fill",function(d){return "url(#gradient_"+d.cellID+")"; });
+
+      cell.exit()
+      	.transition() // let circles shrink-out
+      		.attr('r',0)
+      		.remove();
+
+      // ---------------------------------------------------------------------------
+      // Visual Effects: time-series based color-variation
+
+      // Methodology: Define <svg_defs:radial_gradiaent> for each cell and modify its properties as per the data.
+      // Similar to associating each cell to the data, we associate each <svg:defs> to the data.
+      // Thus, indirectly, we associate each <svg:defs> to each cell.
+
+      var cell_grad = petridish.selectAll("defs").data(cellData);
+      cell_grad.enter()
+      	.append("defs") // cellData[i]: is associated with each <defs>
+      		.append("radialGradient")
+      			.attr("id",function(d){return "gradient_"+d.cellID;}) // accesses data attached to parent <svg:defs>
+      			.attr("cx", "0.5").attr("cy", "0.5").attr("fx", "0.5").attr("fy", "0.5")
+      			.attr("r","0.5")
+
+
+      var radial_gradients = d3.selectAll("radialGradient");
+      radial_gradients.append("stop").attr("offset", "0%").style("stop-color", "red");
+      radial_gradients.append("stop").attr("offset", "100%").style("stop-color", "white");
+
+
+
+// =====================================================================================================
+// Time-Lapse Bar: Indicator
+
+//var time_lapse_width = time_lapse_width + m[1] + m[3];
+//var time_lapse_height = 30;
+
+
+var tl_xscale = d3.scale.linear().range([0,time_lapse_width]);
+
+var tl_div = d3.select(".tl_div");
+var tl_svg = tl_div.append("svg:svg")
+  .attr("class","timelapse")
+  .attr("width",graph_width)
+  .attr("height",graph_height)
+  .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+  tl_svg.append("svg:line")
+    .attr("x1",0)
+    .attr("x2",time_lapse_width)
+    .attr("y1", time_lapse_height/2)
+    .attr("y2", time_lapse_height/2)
+    .attr("stroke","#000")
+    .attr("stroke-width",2)
+    .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+    var timelapse_svg = tl_svg;
+
+
+var bbox_timelapse_svg = timelapse_svg.node().getBBox();  // gives (x,y) coords, but not (height,width)
+var bbox_width = bbox_timelapse_svg.width;//+timelapse_svg.node().getAttribute("width");
+var bbox_height = +timelapse_svg.node().getAttribute("height");
+var tl_radius = 5;
+
+var tl_scale = d3.scale.linear().range([bbox_timelapse_svg.x, bbox_timelapse_svg.x + bbox_width]).domain([0,(cellData[1].voltSig.length)]);
+var tl_circle = timelapse_svg.append("circle")
+  .attr("cx", bbox_timelapse_svg.x) // x_coord determined by time_index
+	.attr("cy",bbox_timelapse_svg.y ) // y_coord determined by the height of the svg_element.
+	.attr("fill", "black")
+	.attr("r", tl_radius);
+
+
+  //*/
+  // =====================================================================================================
+  // Incorporating variation in graphics over time!
+
+  var time_index = 0; // keep track of time-index
+
+
+
+
+  window.setInterval(
+  	function() { // Repeatedly call this function over given time-interval.
+
+  		// ---------------------------------------------------------------------------
+  		// Visual Effects: time-series based color-variation of cells.
+
+      tl_circle.transition().duration(1000).attr("cx",tl_scale(time_index));
+
+      // ----------------------------------------------------------------------
+
+  		var rad_gradients = d3.selectAll("radialGradient");
+  		rad_gradients.transition().duration(1000) // change the radius of the radial_gradient at each time-step
+  			.attr("r",
+  				function(d){
+  					var pd_rScale = d3.scale.linear().domain([d3.min(d.voltSig), d3.max(d.voltSig)]);
+  					pd_rScale.range([0, 1]);
+  					return pd_rScale(d.voltSig[time_index]); }
+  			);
+
+
+
+  			// update time-step : such that it runs as an infinte loop
+      	time_index = (time_index+1) % (cellData[1].voltSig.length);
+
+  			// ---------------------------------------------------------------------------
+  			// Visual Effects: time-series based movement along [time-lapse bar]
+
+  			// Question: Can this subsection be done in another window.setInterval?
+
+  		}
+  		,1000);
+
+  // =============================================================================
+
+
+
+
+
+
+
+
+</script>
+
+<style>
+  /* tell the SVG path to be a thin blue line without any area fill */
+  path {
+    stroke: steelblue;
+    stroke-width: 1;
+    fill: none;
+  }
+
+  .axis {
+    shape-rendering: crispEdges;
+  }
+
+  .x.axis line {
+    stroke: lightgrey;
+  }
+
+  .x.axis .minor {
+    stroke-opacity: .5;
+  }
+
+  .x.axis path {
+    display: none;
+  }
+
+  .y.axis line, .y.axis path {
+    fill: none;
+    stroke: #000;
+  }
+</style>

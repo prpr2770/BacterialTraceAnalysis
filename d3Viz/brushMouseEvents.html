@@ -1,0 +1,35 @@
+<body>
+JS Scripting to handle both BRUSH and MOUSE-CLICK events!
+</body>
+
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script>
+var my_circles = [{"x": 40, "y": 100, "r": 12},
+              {"x": 100, "y": 40, "r": 8}],
+    width = 400,
+    height = 400,
+    svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+function click(d) { console.log("Clicky Clicky!") };
+function mouseover(d) { console.log("I saw  mouse!") }
+
+var brush = d3.svg.brush()
+    .x(d3.scale.identity().domain([0, width]))
+    .y(d3.scale.identity().domain([0, height]))
+
+svg.call(brush);
+
+svg.selectAll("dataObj")
+    .data(my_circles)
+    .enter().append("circle")
+        .attr("r", function(d) { return d.r })
+        .attr("cx", function(d) { return d.x })
+        .attr("cy", function(d) { return d.y })
+        .style("fill", "blue")
+        .attr("pointer-events", "all")
+        .on("mouseover", mouseover)
+        .on("click", click);
+       
+</script>

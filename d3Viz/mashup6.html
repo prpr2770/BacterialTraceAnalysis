@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+
+<!-- ----------------------------------------------------------------------- -->
+<div style="position:absolute;top:0px;left:1300px; float:right;" id="tick_panel">
+    <input type="range" step='2' min="2" max="100" value="100" id="nTicks">
+  </div>
+
+<div class="volt" id="container" style="position:absolute;top:0px;left:50px; float:left;">
+<div id="tl_div" style="position:absolute;top:0px;left:50px; float:left;"></div>
+<div id="singleline" style="position:absolute;top:0px;left:50px; float:left;"></div>
+<div id="multiline" style="position:absolute;top:400px;left:50px; float:left;">   </div>
+<div style="position:absolute;top:800px;left:50px; float:left;"> <svg id="petridish"></svg> </div>
+</div>
+
+<div class="calc" id="container" style="position:absolute;top:0px;left:1500px; float:right;">
+<div id="tl_div" style="position:absolute;top:0px;left:50px; float:left;"></div>
+<div  id="singleline" style="position:absolute;top:0px;left:50px; float:left;"></div>
+<div  id="multiline" style="position:absolute;top:400px;left:50px; float:left;">   </div>
+<div  style="position:absolute;top:800px;left:50px; float:left;"> <svg id="petridish"></svg> </div>
+</div>
+
+<!-- ----------------------------------------------------------------------- -->
+<!--
+<script src="https://d3js.org/d3.v3.min.js"  charset="utf-8"></script>
+<script src="http://www.rationalplayground.com/js/d3/d3.legend.js"  charset="utf-8"></script>
+-->
+<script src="./d3.v3.min.js"  charset="utf-8"></script>
+<script src="./d3.legend.js"  charset="utf-8"></script>
+
+<!-- <script src="https://raw.githubusercontent.com/susielu/d3-legend/master/d3-legend.min.js"  charset="utf-8"></script> -->
+<script src="./plotMultiLine6.js"  type='text/javascript'></script>
+<script src="./plotTimeLapseBar6.js"  type='text/javascript'></script>
+<script src="./plotPetridish.js"  type='text/javascript'></script>
+<script src="./mashup6.js"  type='text/javascript'></script>
+
+
+<script type='text/javascript'>
+
+
+//=============================================================================
+//=============================================================================
+// CellData from measurements
+/*
+var cellData = [
+{cellID: 1, voltSig : [1, 2, 3, 4, 5,1, 2, 3, 4, 5], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 1, yPos: 1 },
+{cellID: 2, voltSig : [1, 2, 3, 4, 5,5, 4, 3, 2, 1], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 2, yPos: 2 },
+{cellID: 3, voltSig : [1, 2, 3, 4, 5,6, 7, 8, 7, 6], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 3, yPos: 3 },
+{cellID: 4, voltSig : [1, 2, 3, 4, 5,5, 6, 7, 8, 9], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 4, yPos: 4 },
+{cellID: 5, voltSig : [1, 2, 3, 4, 5,4, 3, 2, 1, 0], caSig: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5], xPos: 5, yPos: 5 }];
+
+var linkData = [{src:1, dest:2, value:0.8},{src:3, dest:4, value:0.2},{src:1, dest:5, value:0.1}];
+*/
+//=============================================================================
+// Reading data from json
+
+var cellData;
+var voltLinkData;
+var caLinkData;
+
+
+d3.json("./Data_20-Jan-2016_frame2.json", function(error, json){
+        if (error) {
+          alert("ERROR: Reading json");
+          return console.warn(error);
+        }
+        cellData = json.cellData;
+        voltLinkData = json.voltLinkData;
+        caLinkData = json.caLinkData;
+
+mashup6(cellData, voltLinkData, caLinkData);
+      });
+
+
+
+
+
+</script>
+<!-- ----------------------------------------------------------------------- -->
+<style>
+  /* tell the SVG path to be a thin blue line without any area fill */
+  path {
+    stroke: steelblue;
+    stroke-width: 1;
+    fill: none;
+  }
+
+  .axis {
+    shape-rendering: crispEdges;
+  }
+
+  .x.axis line {
+    stroke: lightgrey;
+  }
+
+  .x.axis .minor {
+    stroke-opacity: .5;
+  }
+
+  .x.axis path {
+    display: none;
+  }
+
+  .y.axis line, .y.axis path {
+    fill: none;
+    stroke: #000;
+  }
+
+
+  .brush .extent {
+  fill-opacity: .1;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+
+.cell_link{
+stroke: grey;
+stroke-opacity:0.2;
+
+}
+
+.cellname{
+font-weight: bold;
+fill: blue;
+fill-opacity: .5;
+}
+
+.legend rect {
+  fill:white;
+  stroke:black;
+  opacity:0.8;}
+
+
+</style>
